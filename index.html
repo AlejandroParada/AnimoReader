@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AnimoReader</title>
+<meta name="theme-color" content="#1F7A8C">
+<meta name="description" content="Armá tu estado mental en una oración y tratá de imaginar el del otro.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{--bg:#EEF3F5;--card:#fff;--ink:#16252E;--mute:#5A6C77;--line:#CBD7DD;--me:#1F7A8C;--gu:#B9741A;--on:#fff;--chip:#E3ECF0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A20;--card:#17262E;--ink:#E6EFF3;--mute:#93A7B2;--line:#2B3F4A;--me:#4FB3C6;--gu:#E3A04F;--on:#0F1A20;--chip:#223641}}
+:root[data-theme="dark"]{--bg:#0F1A20;--card:#17262E;--ink:#E6EFF3;--mute:#93A7B2;--line:#2B3F4A;--me:#4FB3C6;--gu:#E3A04F;--on:#0F1A20;--chip:#223641}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Bricolage Grotesque",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px 16px 40px}
+h1{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:4px 0 12px;color:var(--mute)}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{flex:1;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--accent,var(--me));color:var(--on);border-color:transparent;font-weight:600}
+.say{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent,var(--me));border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.say p{margin:0;font:400 1.35rem/1.35 Newsreader,Georgia,serif}
+.say .empty{color:var(--mute);font-style:italic}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.row button,.q button{padding:8px 12px;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:8px;font:inherit;cursor:pointer}
+fieldset{border:0;padding:0;margin:0 0 14px}
+legend{font-weight:600;margin-bottom:6px;padding:0}
+legend small{color:var(--mute);font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:8px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;font:inherit;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent,var(--me));color:var(--on);border-color:transparent}
+button:focus-visible{outline:3px solid var(--accent,var(--me));outline-offset:2px}
+.q{background:var(--chip);border-radius:12px;padding:12px 14px;margin:6px 0 14px}
+.q p{margin:4px 0}
+.n{color:var(--mute);font-size:.9rem;text-align:center;margin-top:18px}
+.cmp{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden}
+.cmp th,.cmp td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:.95rem}
+.cmp th{color:var(--mute);font-weight:600}
+.ok{color:var(--me);font-weight:600}.no{color:var(--gu);font-weight:600}
+.wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+<h1>AnimoReader: cómo estoy, cómo imagino que estás</h1>
+<div class="tabs" role="tablist">
+<button role="tab" id="t-me" aria-selected="true">Mi estado</button>
+<button role="tab" id="t-gu" aria-selected="false">Imagino tu estado</button>
+<button role="tab" id="t-cm" aria-selected="false">Comparar</button>
+</div>
+<div id="app"></div>
+<p class="n" id="count"></p>
+</main>
+<script>
+var D=[
+{k:'modo',t:'Modo',o:[['resolver','en modo resolver'],['tiempo','en modo tiempo para algo'],['descanso','en modo descanso']]},
+{k:'foco',t:'Foco',o:[['problema','con el foco en un problema'],['relacion','con el foco en la relación (quiero conectar)'],['necesidad','con el foco en una necesidad (tengo ganas de algo)'],['pasatiempo','con el foco en un pasatiempo'],['aprender','con el foco en aprender algo']]},
+{k:'emo',t:'Emoción',multi:1,o:[['frus','frustración e impotencia'],['enojo','enojo o bronca'],['ans','ansiedad'],['amor','amor'],['ale','alegría o diversión'],['apa','apatía'],['des','desilusión']]},
+{k:'tiempo',t:'Percepción del tiempo',o:[['t','con tiempo disponible'],['a','con algo de tiempo'],['p','con poco tiempo'],['n','sin tiempo']]},
+{k:'nec',t:'Necesidad del cuerpo',o:[['ham','con hambre'],['ban','con ganas de ir al baño'],['sex','con deseo de intimidad'],['des','con sueño']]},
+{k:'animo',t:'Estado de ánimo',o:[['b','de buen humor'],['m','de mal humor']]}
+];
+var S={me:{},gu:{}},tab='me';
+var $=function(i){return document.getElementById(i)};
+function lab(d,v){for(var i=0;i<d.o.length;i++)if(d.o[i][0]===v)return d.o[i][1]}
+function parts(st){var r=[];D.forEach(function(d){var v=st[d.k];if(!v||(d.multi&&!v.length))return;
+ if(d.multi){var l=v.map(function(x){return lab(d,x)});r.push('sintiendo '+(l.length>1?l.slice(0,-1).join(', ')+' y '+l[l.length-1]:l[0]))}
+ else r.push(lab(d,v))});return r}
+function sentence(st,who){var p=parts(st);if(!p.length)return '';
+ var j=p.length>1?p.slice(0,-1).join(', ')+' y '+p[p.length-1]:p[0];
+ return (who==='me'?'Estoy ':'Creo que estás ')+j+'.'}
+function questions(st){var q=[];
+ if(st.modo==='resolver'||st.foco==='problema')q.push('¿Quieres que te ayude a resolverlo o prefieres que solo te escuche?');
+ if(st.modo==='descanso')q.push('¿Necesitas espacio o compañía tranquila?');
+ if(st.foco==='relacion')q.push('¿Te parece si dedicamos un rato a estar juntos?');
+ if(st.tiempo==='p'||st.tiempo==='n')q.push('¿Lo retomamos más tarde, a una hora que acordemos?');
+ if(st.nec==='ham'||st.nec==='des'||st.nec==='ban')q.push('¿Atendemos primero esta necesidad y después conversamos?');
+ if(st.emo&&st.emo.length>1)q.push('Estoy sintiendo varias cosas a la vez. ¿Me das un momento para ordenarlas?');
+ return q.slice(0,2)}
+function pick(d,v){var st=S[tab];
+ if(d.multi){var a=st[d.k]||[],i=a.indexOf(v);if(i>-1)a.splice(i,1);else a.push(v);st[d.k]=a}
+ else st[d.k]=st[d.k]===v?null:v;render()}
+function total(){var n=1;D.forEach(function(d){n*=d.multi?Math.pow(2,d.o.length):d.o.length+1});return n}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e}
+function render(){
+ var app=$('app');app.textContent='';
+ ['me','gu','cm'].forEach(function(k){$('t-'+k).setAttribute('aria-selected',String(k===tab))});
+ document.documentElement.style.setProperty('--accent',tab==='gu'?'var(--gu)':'var(--me)');
+ $('count').textContent='Con estas seis dimensiones hay '+total().toLocaleString('es')+' combinaciones posibles. El estado del otro rara vez es uno solo.';
+ if(tab==='cm'){compare(app);return}
+ var st=S[tab],s=sentence(st,tab);
+ var box=el('div','say');box.appendChild(s?el('p','',s):el('p','empty',tab==='me'?'Elige abajo cómo estás ahora.':'Elige abajo cómo imaginas que está la otra persona.'));
+ var row=el('div','row');
+ var cp=el('button','','Copiar');cp.onclick=function(){if(!s)return;try{navigator.clipboard.writeText(s);cp.textContent='Copiado'}catch(e){cp.textContent='No se pudo copiar'}setTimeout(function(){cp.textContent='Copiar'},1500)};
+ var cl=el('button','','Limpiar');cl.onclick=function(){S[tab]={};render()};
+ row.appendChild(cp);row.appendChild(cl);box.appendChild(row);app.appendChild(box);
+ var qs=questions(st);
+ if(qs.length){var q=el('div','q');q.appendChild(el('strong','',tab==='me'?'Para decirlo en voz alta':'Para preguntar antes de suponer'));qs.forEach(function(x){q.appendChild(el('p','',x))});app.appendChild(q)}
+ D.forEach(function(d){var f=el('fieldset'),lg=el('legend','',d.t+' ');
+  if(d.multi)lg.appendChild(el('small','','(puedes elegir varias)'));
+  else if(tab==='gu')lg.appendChild(el('small','','(si no sabes, déjalo sin elegir)'));
+  f.appendChild(lg);var c=el('div','chips');
+  d.o.forEach(function(o){var b=el('button','chip',o[1].replace(/^(con el foco en |en modo |con |de |sin )/,''));
+   var on=d.multi?(st[d.k]||[]).indexOf(o[0])>-1:st[d.k]===o[0];
+   b.setAttribute('aria-pressed',String(on));b.onclick=function(){pick(d,o[0])};c.appendChild(b)});
+  f.appendChild(c);app.appendChild(f)})}
+function val(st,d){var v=st[d.k];if(!v||(d.multi&&!v.length))return null;return d.multi?v.map(function(x){return lab(d,x)}).join(', '):lab(d,v)}
+function compare(app){
+ var a=sentence(S.me,'me'),g=sentence(S.gu,'gu');
+ var box=el('div','say');box.appendChild(el('p','empty','Cada persona arma su estado real en «Mi estado». Quien imagina el del otro lo arma en «Imagino tu estado». Aquí se ven las diferencias.'));app.appendChild(box);
+ if(!a||!g){app.appendChild(el('p','n','Falta completar al menos una dimensión en «Mi estado» y en «Imagino tu estado».'));return}
+ var w=el('div','wrap'),t=el('table','cmp'),h=el('tr');['Dimensión','Estado real','Lo que imaginé',''].forEach(function(x){h.appendChild(el('th','',x))});t.appendChild(h);
+ var hit=0,tot=0;
+ D.forEach(function(d){var x=val(S.me,d),y=val(S.gu,d);if(!x&&!y)return;var r=el('tr');
+  r.appendChild(el('td','',d.t));r.appendChild(el('td','',x||'sin elegir'));r.appendChild(el('td','',y||'no sabía'));
+  var m=x&&y&&x===y;if(x&&y){tot++;if(m)hit++}
+  r.appendChild(el('td',x&&y?(m?'ok':'no'):'',x&&y?(m?'coincide':'distinto'):''));t.appendChild(r)});
+ w.appendChild(t);app.appendChild(w);
+ app.appendChild(el('p','n','Coincidieron '+hit+' de '+tot+'. Las diferencias no son errores: son buenas preguntas para hacerse.'))}
+$('t-me').onclick=function(){tab='me';render()};
+$('t-gu').onclick=function(){tab='gu';render()};
+$('t-cm').onclick=function(){tab='cm';render()};
+render();
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+</script>
+</body>
+</html>
