@@ -9,6 +9,10 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="AnimoReader">
 <style>
 :root{--bg:#EEF3F5;--card:#fff;--ink:#16252E;--mute:#5A6C77;--line:#CBD7DD;--me:#1F7A8C;--gu:#B9741A;--on:#fff;--chip:#E3ECF0}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A20;--card:#17262E;--ink:#E6EFF3;--mute:#93A7B2;--line:#2B3F4A;--me:#4FB3C6;--gu:#E3A04F;--on:#0F1A20;--chip:#223641}}
@@ -59,11 +63,18 @@ main.has-dock{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .dock-inner{max-width:640px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between}
 .dock p{margin:0}
 .dock button{padding:10px 16px;border:0;border-radius:10px;font:inherit;font-weight:600;background:var(--gu);color:var(--on);cursor:pointer}
+.install{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 14px}
+.install[hidden]{display:none}
+.install p{margin:0;flex:1 1 180px;font-size:.95rem}
+.install .row{margin-top:0;flex:none}
+.install button.install-go{background:var(--me);color:var(--on);border-color:transparent;font-weight:600}
+.install button.install-x{background:transparent;border-color:transparent;color:var(--mute)}
 </style>
 </head>
 <body>
 <main>
 <h1>AnimoReader: cómo estoy, cómo imagino que estás</h1>
+<div id="install" class="install" hidden></div>
 <div class="tabs" role="tablist">
 <button role="tab" id="t-me" aria-selected="true">Mi estado</button>
 <button role="tab" id="t-gu" aria-selected="false">Imagino tu estado</button>
@@ -294,6 +305,20 @@ readLink();
 render();
 window.addEventListener('hashchange',function(){readLink();render()});
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+var deferredInstall=null;
+function installedApp(){return window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true}
+function mobileDevice(){var ua=navigator.userAgent||'';if(/Android|iPhone|iPad|iPod/i.test(ua))return true;return navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1}
+function installHidden(){try{return sessionStorage.getItem('animoreader-install-hide')==='1'}catch(e){return false}}
+function hideInstall(remember){if(remember){try{sessionStorage.setItem('animoreader-install-hide','1')}catch(e){}}var box=$('install');if(!box)return;box.hidden=true;box.textContent=''}
+function showInstall(mode){var box=$('install');if(!box)return;if(installedApp()||!mobileDevice()||installHidden()){hideInstall(false);return}box.hidden=false;box.textContent='';
+ box.appendChild(el('p','',mode==='ios'?'Para crear el ícono, toca Compartir y después Agregar a inicio.':'Instala AnimoReader para tener el ícono en el celular.'));
+ var row=el('div','row');
+ if(mode==='native'){var b=el('button','install-go','Instalar');b.onclick=function(){if(!deferredInstall)return;var prompt=deferredInstall.prompt();var choice=deferredInstall.userChoice;deferredInstall=null;Promise.resolve(choice||prompt).then(function(result){hideInstall(result&&result.outcome==='accepted')}).catch(function(){hideInstall(false)})};row.appendChild(b)}
+ var x=el('button','install-x','Ahora no');x.setAttribute('aria-label','Cerrar aviso de instalación');x.onclick=function(){hideInstall(true)};row.appendChild(x);box.appendChild(row)}
+window.addEventListener('beforeinstallprompt',function(e){if(!mobileDevice()||installedApp())return;e.preventDefault();deferredInstall=e;showInstall('native')});
+window.addEventListener('appinstalled',function(){deferredInstall=null;hideInstall(true)});
+try{window.matchMedia('(display-mode: standalone)').addEventListener('change',function(ev){if(ev.matches)hideInstall(true)})}catch(e){}
+(function(){var ua=navigator.userAgent||'';var iOS=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);var other=/CriOS|FxiOS|EdgiOS|OPiOS|WhatsApp|Instagram|FBAN|FBAV/.test(ua);if(iOS&&!other)showInstall('ios')})();
 </script>
 </body>
 </html>
