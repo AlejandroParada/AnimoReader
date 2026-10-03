@@ -85,12 +85,12 @@ main.has-dock{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 </main>
 <script>
 var D=[
-{k:'modo',t:'Modo',o:[['resolver','en modo resolver'],['tiempo','en modo tiempo para algo'],['descanso','en modo descanso']]},
-{k:'foco',t:'Foco',o:[['problema','con el foco en un problema'],['relacion','con el foco en la relación (quiero conectar)'],['necesidad','con el foco en una necesidad (tengo ganas de algo)'],['pasatiempo','con el foco en un pasatiempo'],['aprender','con el foco en aprender algo']]},
-{k:'emo',t:'Emoción',multi:1,o:[['frus','frustración e impotencia'],['enojo','enojo o bronca'],['ans','ansiedad'],['amor','amor'],['ale','alegría o diversión'],['apa','apatía'],['des','desilusión']]},
-{k:'tiempo',t:'Percepción del tiempo',o:[['t','con tiempo disponible'],['a','con algo de tiempo'],['p','con poco tiempo'],['n','sin tiempo']]},
-{k:'nec',t:'Necesidad del cuerpo',o:[['ham','con hambre'],['ban','con ganas de ir al baño'],['sex','con deseo de intimidad'],['des','con sueño']]},
-{k:'animo',t:'Estado de ánimo',o:[['b','de buen humor'],['m','de mal humor']]}
+{k:'modo',t:'Modo',o:[['resolver','en modo resolver'],['tiempo','en modo tiempo para algo'],['descanso','en modo descanso'],['escuchar','en modo escuchar'],['conectar','en modo conectar'],['crear','en modo crear'],['trabajar','en modo trabajar'],['jugar','en modo jugar'],['cuidar','en modo cuidar'],['planear','en modo planear'],['procesar','en modo procesar'],['silencio','en modo silencio'],['compania','en modo compañía']]},
+{k:'foco',t:'Foco',o:[['problema','con el foco en un problema'],['relacion','con el foco en la relación (quiero conectar)'],['necesidad','con el foco en una necesidad (tengo ganas de algo)'],['pasatiempo','con el foco en un pasatiempo'],['aprender','con el foco en aprender algo'],['trabajo','con el foco en el trabajo'],['casa','con el foco en la casa'],['salud','con el foco en la salud'],['dinero','con el foco en el dinero'],['futuro','con el foco en el futuro'],['conversacion','con el foco en una conversación'],['cuerpo','con el foco en el cuerpo'],['proyecto','con el foco en un proyecto'],['naturaleza','con el foco en la naturaleza'],['memoria','con el foco en un recuerdo']]},
+{k:'emo',t:'Emoción',multi:1,o:[['frus','frustración e impotencia'],['enojo','enojo o bronca'],['ans','ansiedad'],['amor','amor'],['ale','alegría o diversión'],['apa','apatía'],['des','desilusión'],['miedo','miedo'],['tristeza','tristeza'],['calma','calma'],['verguenza','vergüenza'],['culpa','culpa'],['esperanza','esperanza'],['gratitud','gratitud'],['soledad','soledad'],['ternura','ternura'],['confusion','confusión']]},
+{k:'tiempo',t:'Percepción del tiempo',o:[['t','con tiempo disponible'],['a','con algo de tiempo'],['p','con poco tiempo'],['n','sin tiempo'],['apuro','con apuro'],['lento','con el tiempo yendo lento'],['rapido','con el tiempo yendo rápido'],['espera','esperando'],['pausa','con una pausa']]},
+{k:'nec',t:'Necesidad del cuerpo',o:[['ham','con hambre'],['ban','con ganas de ir al baño'],['sex','con deseo de intimidad'],['des','con sueño'],['sed','con sed'],['frio','con frío'],['calor','con calor'],['dolor','con dolor o molestia'],['cansancio','con cansancio'],['aire','con ganas de aire libre'],['movimiento','con ganas de moverme'],['contacto','con ganas de contacto'],['higiene','con ganas de asearme'],['energia','con poca energía']]},
+{k:'animo',t:'Estado de ánimo',o:[['b','de buen humor'],['m','de mal humor'],['neutro','de ánimo neutro'],['irritable','de ánimo irritable'],['sensible','de ánimo sensible'],['animado','de ánimo animado'],['apagado','de ánimo apagado']]}
 ];
 /* Enlace: #e=<versión>.<modo>-<foco>-<emociones>-<tiempo>-<necesidad>-<ánimo>
    Elección única: 0 = sin elegir, 1..n = opción en el orden de esa versión.
@@ -98,12 +98,12 @@ var D=[
    Si cambia el orden o el sentido de una opción, subí SCHEMA y conservá la lista anterior. */
 var SCHEMA=1;
 var VERSIONS={1:[
-{k:'modo',keys:['resolver','tiempo','descanso']},
-{k:'foco',keys:['problema','relacion','necesidad','pasatiempo','aprender']},
-{k:'emo',multi:1,keys:['frus','enojo','ans','amor','ale','apa','des']},
-{k:'tiempo',keys:['t','a','p','n']},
-{k:'nec',keys:['ham','ban','sex','des']},
-{k:'animo',keys:['b','m']}
+{k:'modo',keys:['resolver','tiempo','descanso','escuchar','conectar','crear','trabajar','jugar','cuidar','planear','procesar','silencio','compania']},
+{k:'foco',keys:['problema','relacion','necesidad','pasatiempo','aprender','trabajo','casa','salud','dinero','futuro','conversacion','cuerpo','proyecto','naturaleza','memoria']},
+{k:'emo',multi:1,keys:['frus','enojo','ans','amor','ale','apa','des','miedo','tristeza','calma','verguenza','culpa','esperanza','gratitud','soledad','ternura','confusion']},
+{k:'tiempo',keys:['t','a','p','n','apuro','lento','rapido','espera','pausa']},
+{k:'nec',keys:['ham','ban','sex','des','sed','frio','calor','dolor','cansancio','aire','movimiento','contacto','higiene','energia']},
+{k:'animo',keys:['b','m','neutro','irritable','sensible','animado','apagado']}
 ]};
 var SSKEY='animoreader-share';
 var LSKEY='animoreader-state';
