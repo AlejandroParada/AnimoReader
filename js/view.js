@@ -126,7 +126,7 @@ export function createView(doc, getSession, api) {
       dims.appendChild(tabBtn);
     });
     app.appendChild(dims);
-    var field = el(doc, 'fieldset');
+    var field = el(doc, 'fieldset', 'sheet-page');
     var legend = el(doc, 'legend', '', current.t + ' ');
     if (current.multi) legend.appendChild(el(doc, 'small', '', '(puedes elegir varias)'));
     else if (tab === 'gu') legend.appendChild(el(doc, 'small', '', '(si no sabes, déjalo sin elegir)'));
@@ -140,7 +140,27 @@ export function createView(doc, getSession, api) {
       chips.appendChild(button);
     });
     field.appendChild(chips);
-    app.appendChild(field);
+    var sheet = el(doc, 'div', 'sheet');
+    var forward = session.slide > 0;
+    if (session.leaving) {
+      field.classList.add(forward ? 'from-right' : 'from-left');
+      session.leaving.className = 'sheet-page ' + (forward ? 'to-left' : 'to-right');
+      session.leaving.setAttribute('aria-hidden', 'true');
+      sheet.appendChild(session.leaving);
+    }
+    sheet.appendChild(field);
+    app.appendChild(sheet);
+    if (session.leaving) {
+      var gone = session.leaving;
+      sheet.style.minHeight = Math.max(field.offsetHeight, gone.offsetHeight) + 'px';
+      var finish = function () {
+        if (gone.parentNode) gone.parentNode.removeChild(gone);
+        sheet.style.minHeight = '';
+      };
+      gone.addEventListener('animationend', finish);
+      setTimeout(finish, 500);
+      session.leaving = null;
+    }
     var prompts = questions(state);
     if (prompts.length && !lock) app.appendChild(questionBox(doc, tab === 'me' ? 'Para decirlo en voz alta' : 'Para preguntar antes de suponer', prompts));
     if (pending && tab === 'gu') {
@@ -200,7 +220,10 @@ export function createView(doc, getSession, api) {
     box.appendChild(el(doc, 'h2', '', 'Fundamento'));
     box.appendChild(el(doc, 'p', '', 'El cerebro puede tener varias combinaciones posibles de estados. El propósito de esta app es tener una representación visual de lo que pasa en nuestra mente y una forma gráfica de expresarlo cuando no sabemos cómo decirlo en palabras.'));
     box.appendChild(el(doc, 'p', '', 'Incluye una forma lúdica de intentar adivinar o interpretar el estado del otro.'));
-    box.appendChild(el(doc, 'p', 'n', 'Con estas seis dimensiones hay ' + api.combinationCount() + ' combinaciones posibles. El estado del otro rara vez es uno solo.'));
+    var figure = el(doc, 'p', 'figure');
+    figure.appendChild(el(doc, 'span', 'figure-n', api.combinationCount()));
+    box.appendChild(figure);
+    box.appendChild(el(doc, 'p', 'n', 'combinaciones posibles con estas seis dimensiones. El estado del otro rara vez es uno solo.'));
     var pattern = riskPattern(session.S.me);
     if (pattern) {
       var hug = el(doc, 'button', 'hug');
@@ -220,11 +243,19 @@ export function createView(doc, getSession, api) {
   function render() {
     var session = getSession();
     var app = $('app');
+    session.leaving = null;
+    if (session.slide) {
+      var reduce = doc.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var old = app.querySelector('.sheet-page:not(.to-left):not(.to-right)');
+      if (old && !reduce) session.leaving = old.cloneNode(true);
+    }
     app.textContent = '';
     var pending = session.incoming && session.incoming.state && !session.incoming.revealed;
     doc.querySelector('main').classList.toggle('has-dock', !!(pending && !session.showGate && session.tab === 'gu'));
     ['me', 'gu', 'cm', 'fu'].forEach(function (key) { $('t-' + key).setAttribute('aria-selected', String(!session.showGate && key === session.tab)); });
-    doc.documentElement.style.setProperty('--accent', (session.showGate || session.tab === 'gu') ? 'var(--gu)' : 'var(--me)');
+    var warm = session.showGate || session.tab === 'gu';
+    doc.documentElement.dataset.climate = warm ? 'gu' : 'me';
+    doc.documentElement.style.setProperty('--accent', warm ? 'var(--gu)' : 'var(--me)');
     if (session.incoming && session.incoming.error) {
       var err = el(doc, 'div', 'q');
       err.appendChild(el(doc, 'p', '', session.incoming.error));

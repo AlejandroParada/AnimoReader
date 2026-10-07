@@ -3,9 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+try {
+  var savedTheme = localStorage.getItem('animoreader-theme');
+  if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.setAttribute('data-theme', savedTheme);
+  var savedFont = localStorage.getItem('animoreader-font');
+  if (savedFont === '87.5' || savedFont === '112.5' || savedFont === '125') document.documentElement.style.fontSize = savedFont + '%';
+} catch (e) {}
+</script>
 <title>AnimoReader</title>
 <meta name="theme-color" content="#1F7A8C">
 <meta name="description" content="Armá tu estado mental en una oración y tratá de imaginar el del otro.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -14,17 +25,19 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="AnimoReader">
 <style>
-:root{--bg:#EEF3F5;--card:#fff;--ink:#16252E;--mute:#5A6C77;--line:#CBD7DD;--me:#1F7A8C;--gu:#B9741A;--on:#fff;--chip:#E3ECF0}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A20;--card:#17262E;--ink:#E6EFF3;--mute:#93A7B2;--line:#2B3F4A;--me:#4FB3C6;--gu:#E3A04F;--on:#0F1A20;--chip:#223641}}
-:root[data-theme="dark"]{--bg:#0F1A20;--card:#17262E;--ink:#E6EFF3;--mute:#93A7B2;--line:#2B3F4A;--me:#4FB3C6;--gu:#E3A04F;--on:#0F1A20;--chip:#223641}
+:root{--bg:#EEF3F5;--card:#fff;--ink:#16252E;--mute:#5A6C77;--line:#CBD7DD;--me:#1F7A8C;--gu:#B9741A;--on:#fff;--chip:#E3ECF0;--wash-me:20%;--wash-gu:9%;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A20;--card:#17262E;--ink:#E6EFF3;--mute:#93A7B2;--line:#2B3F4A;--me:#4FB3C6;--gu:#E3A04F;--on:#0F1A20;--chip:#223641;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1A20;--card:#17262E;--ink:#E6EFF3;--mute:#93A7B2;--line:#2B3F4A;--me:#4FB3C6;--gu:#E3A04F;--on:#0F1A20;--chip:#223641;color-scheme:dark}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+html[data-climate="gu"]{--wash-me:8%;--wash-gu:22%}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Bricolage Grotesque",system-ui,sans-serif}
-main{max-width:640px;margin:0 auto;padding:16px 16px 40px}
+body{min-height:100vh;margin:0;color:var(--ink);font:1rem/1.45 "Bricolage Grotesque",system-ui,sans-serif;background-color:var(--bg);background-image:radial-gradient(ellipse 90% 48% at -10% -8%, color-mix(in srgb, var(--me) var(--wash-me), transparent), transparent 68%),radial-gradient(ellipse 78% 42% at 112% -6%, color-mix(in srgb, var(--gu) var(--wash-gu), transparent), transparent 66%);background-repeat:no-repeat}
+main{max-width:640px;margin:0 auto;padding:16px 16px calc(92px + env(safe-area-inset-bottom,0px))}
 h1{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:4px 0 12px;color:var(--mute)}
-.tabs{display:flex;gap:6px;margin-bottom:14px}
-.tabs button{flex:1;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-size:.92rem;line-height:1.15;cursor:pointer}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.tabs button{flex:1 1 calc(50% - 6px);min-width:calc(50% - 6px);padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-size:.92rem;line-height:1.15;cursor:pointer}
+@media (min-width:560px){.tabs button{flex:1 1 0;min-width:0}}
 .tabs button[aria-selected=true]{background:var(--accent,var(--me));color:var(--on);border-color:transparent;font-weight:600}
 .dims{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 14px}
 .dims button{padding:10px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-size:.92rem;line-height:1.15;text-align:center;cursor:pointer}
@@ -34,16 +47,32 @@ h1{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:4px 0 12px;color:var(
 .fund{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent,var(--me));border-radius:12px;padding:16px 16px 14px}
 .fund h2{font:500 1.35rem/1.3 Newsreader,Georgia,serif;margin:0 0 8px}
 .fund p{margin:0 0 12px}
-.fund .n{margin:4px 0 0;text-align:left}
-.hug{display:inline-flex;align-items:center;gap:8px;height:48px;margin-top:12px;padding:0 14px 0 10px;border:1px solid var(--line);border-radius:12px;background:var(--chip);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
-.hug-emoji{font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",emoji;font-weight:400;font-style:normal;font-size:28px;line-height:1;font-variant-emoji:emoji}
+.fund .n{margin:6px 0 0;text-align:left;font-size:.82rem;line-height:1.4}
+.figure{margin:22px 0 0}
+.figure-n{display:block;font:500 clamp(1.45rem,4.8vw,3rem)/1.02 Newsreader,Georgia,serif;letter-spacing:-0.03em;color:var(--me)}
+.hug{display:inline-flex;align-items:center;gap:10px;height:64px;margin-top:16px;padding:0 18px 0 12px;border:1px solid color-mix(in srgb, var(--gu) 40%, var(--line));border-radius:16px;background:color-mix(in srgb, var(--gu) 18%, var(--card));color:var(--ink);font:inherit;font-weight:600;cursor:pointer;box-shadow:0 10px 24px color-mix(in srgb, var(--gu) 16%, transparent)}
+.hug-emoji{font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",emoji;font-weight:400;font-style:normal;font-size:40px;line-height:1;font-variant-emoji:emoji}
 .fund .comfort{margin:12px 0 0}
-.say{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent,var(--me));border-radius:12px;padding:14px 16px;margin-bottom:14px}
-.say p{margin:0;font:400 1.35rem/1.35 Newsreader,Georgia,serif}
-.say .empty{color:var(--mute);font-style:italic}
+.say{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent,var(--me));border-radius:12px;padding:26px 24px 18px;margin-bottom:36px;box-shadow:0 18px 40px color-mix(in srgb, var(--ink) 7%, transparent)}
+.say p{margin:0;font:400 clamp(1.55rem,4.8vw,1.95rem)/1.26 Newsreader,Georgia,serif}
+.say .empty{color:var(--ink);opacity:.68;font-style:italic}
 .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.say .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
 .row button,.q button{padding:8px 12px;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:8px;font:inherit;cursor:pointer}
+.say .row button{width:100%;min-width:0;text-align:center;padding:10px 4px;font-size:clamp(.84rem,2.9vw,1rem);line-height:1.15}
 fieldset{border:0;padding:0;margin:0 0 14px}
+.sheet{position:relative;overflow:hidden;margin:0 0 14px}
+.sheet fieldset{margin:0}
+.sheet-page.from-right{animation:page-from-right .36s cubic-bezier(.22,.61,.36,1)}
+.sheet-page.from-left{animation:page-from-left .36s cubic-bezier(.22,.61,.36,1)}
+.sheet-page.to-left,.sheet-page.to-right{position:absolute;left:0;right:0;top:0;pointer-events:none}
+.sheet-page.to-left{animation:page-to-left .36s cubic-bezier(.22,.61,.36,1) forwards}
+.sheet-page.to-right{animation:page-to-right .36s cubic-bezier(.22,.61,.36,1) forwards}
+@keyframes page-from-right{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes page-from-left{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@keyframes page-to-left{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+@keyframes page-to-right{from{transform:translateX(0)}to{transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){.sheet-page.from-right,.sheet-page.from-left,.sheet-page.to-left,.sheet-page.to-right{animation:none}}
 legend{font-weight:600;margin-bottom:6px;padding:0}
 legend small{color:var(--mute);font-weight:400}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -59,7 +88,7 @@ button:focus-visible{outline:3px solid var(--accent,var(--me));outline-offset:2p
 .ok{color:var(--me);font-weight:600}.no{color:var(--gu);font-weight:600}
 .wrap{overflow-x:auto}
 .say p+p{margin-top:8px}
-.say p.hint{margin-top:8px;color:var(--mute);font:400 .95rem/1.35 "Bricolage Grotesque",system-ui,sans-serif;font-style:normal}
+.say p.hint{margin-top:12px;color:var(--mute);font:400 .8rem/1.4 "Bricolage Grotesque",system-ui,sans-serif;font-style:normal}
 .gate{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--gu);border-radius:12px;padding:16px 16px 14px}
 .gate h2{font:500 1.35rem/1.3 Newsreader,Georgia,serif;margin:0 0 8px}
 .gate p{margin:0 0 12px}
@@ -68,8 +97,15 @@ button:focus-visible{outline:3px solid var(--accent,var(--me));outline-offset:2p
 .row button.go,.gate button.go,.q button.go{background:var(--gu);color:var(--on);border-color:transparent;font-weight:600}
 .chip:disabled{opacity:.72;cursor:default}
 .url{display:block;width:100%;margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;color:var(--ink);background:var(--bg)}
-main.has-dock{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-.dock{position:fixed;left:0;right:0;bottom:0;z-index:4;background:var(--card);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+main.has-dock{padding-bottom:calc(172px + env(safe-area-inset-bottom,0px))}
+.dock{position:fixed;left:0;right:0;bottom:calc(69px + env(safe-area-inset-bottom,0px));z-index:4;background:var(--card);border-top:1px solid var(--line);padding:12px 16px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.bar-inner{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.bar button{height:48px;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:10px;font:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.bar button:disabled{opacity:.4;cursor:default}
+.bar .a-sm{font-size:.82rem;font-weight:600;line-height:1}
+.bar .a-lg{font-size:1.35rem;font-weight:600;line-height:1}
+.bar svg{width:22px;height:22px;display:block}
 .dock-inner{max-width:640px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between}
 .dock p{margin:0}
 .dock button{padding:10px 16px;border:0;border-radius:10px;font:inherit;font-weight:600;background:var(--gu);color:var(--on);cursor:pointer}
@@ -93,6 +129,13 @@ main.has-dock{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 </div>
 <div id="app"></div>
 </main>
+<div class="bar">
+<div class="bar-inner" role="toolbar" aria-label="Apariencia">
+<button type="button" id="font-down" aria-label="Achicar el texto"><span class="a-sm">A</span></button>
+<button type="button" id="theme-toggle" aria-label="Activar modo oscuro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+<button type="button" id="font-up" aria-label="Agrandar el texto"><span class="a-lg">A</span></button>
+</div>
+</div>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

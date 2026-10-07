@@ -1,10 +1,15 @@
 /* Une la pantalla con el estado: navegación, memoria del navegador y compartir. */
-import { cloneState, decode, encodeState, hasAny, catalogOk, total, toggle, riskPattern, SHARE_BLURB } from './domain.js';
+import { DIMENSIONS, cloneState, decode, encodeState, hasAny, catalogOk, total, toggle, riskPattern, SHARE_BLURB } from './domain.js';
 import { createView } from './view.js';
 
 var STATE_KEY = 'animoreader-state';
 var SHARE_KEY = 'animoreader-share';
 var INSTALL_KEY = 'animoreader-install-hide';
+var THEME_KEY = 'animoreader-theme';
+var FONT_KEY = 'animoreader-font';
+var FONT_STEPS = [87.5, 100, 112.5, 125];
+var MOON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+var SUN = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.1 5.1l1.6 1.6M17.3 17.3l1.6 1.6M18.9 5.1l-1.6 1.6M6.7 17.3l-1.6 1.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 var session = { S: { me: {}, gu: {} }, tab: 'me', dim: 'modo', incoming: null, showGate: false, shownLink: '', comfortOpen: false, comfortId: '' };
 var deferredInstall = null;
 var view = createView(document, function () { return session; }, {
@@ -141,7 +146,19 @@ function reveal() {
   session.tab = 'cm';
   view.render();
 }
-function openDim(key) { session.dim = key; view.render(); }
+function openDim(key) {
+  if (key === session.dim) return;
+  var from = 0;
+  var to = 0;
+  DIMENSIONS.forEach(function (dim, index) {
+    if (dim.k === session.dim) from = index;
+    if (dim.k === key) to = index;
+  });
+  session.slide = to > from ? 1 : -1;
+  session.dim = key;
+  view.render();
+  session.slide = 0;
+}
 function go(key) {
   if (session.showGate && session.incoming && session.incoming.state) { session.incoming.started = true; saveIncoming(); }
   session.showGate = false;
@@ -209,10 +226,68 @@ function showInstall(mode) {
   });
 }
 
+function storedTheme() {
+  try {
+    var value = localStorage.getItem(THEME_KEY);
+    return value === 'dark' || value === 'light' ? value : '';
+  } catch (e) { return ''; }
+}
+function systemDark() { return window.matchMedia('(prefers-color-scheme: dark)').matches; }
+function effectiveDark() {
+  var choice = storedTheme();
+  if (choice === 'dark') return true;
+  if (choice === 'light') return false;
+  return systemDark();
+}
+function paintTheme() {
+  var dark = effectiveDark();
+  var button = $('theme-toggle');
+  button.innerHTML = dark ? SUN : MOON;
+  button.setAttribute('aria-label', dark ? 'Activar modo claro' : 'Activar modo oscuro');
+  button.setAttribute('aria-pressed', String(dark));
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', dark ? '#0F1A20' : '#EEF3F5');
+}
+function toggleTheme() {
+  var next = effectiveDark() ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  paintTheme();
+}
+function fontIndex() {
+  var raw = '';
+  try { raw = localStorage.getItem(FONT_KEY) || ''; } catch (e) {}
+  var index = FONT_STEPS.indexOf(parseFloat(raw));
+  return index < 0 ? 1 : index;
+}
+function applyFont(index, save) {
+  var value = FONT_STEPS[index];
+  document.documentElement.style.fontSize = value === 100 ? '' : value + '%';
+  if (save) {
+    try {
+      if (value === 100) localStorage.removeItem(FONT_KEY);
+      else localStorage.setItem(FONT_KEY, String(value));
+    } catch (e) {}
+  }
+  $('font-down').disabled = index === 0;
+  $('font-up').disabled = index === FONT_STEPS.length - 1;
+}
+function stepFont(delta) {
+  var next = fontIndex() + delta;
+  if (next < 0 || next >= FONT_STEPS.length) return;
+  applyFont(next, true);
+}
+
 $('t-me').onclick = function () { go('me'); };
 $('t-gu').onclick = function () { go('gu'); };
 $('t-cm').onclick = function () { go('cm'); };
 $('t-fu').onclick = function () { go('fu'); };
+$('font-down').onclick = function () { stepFont(-1); };
+$('font-up').onclick = function () { stepFont(1); };
+$('theme-toggle').onclick = toggleTheme;
+applyFont(fontIndex(), false);
+paintTheme();
+try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { if (!storedTheme()) paintTheme(); }); } catch (e) {}
 loadLocal();
 refreshComfort();
 readLink();
