@@ -24,8 +24,20 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Bricolage Gr
 main{max-width:640px;margin:0 auto;padding:16px 16px 40px}
 h1{font:500 1.1rem "Bricolage Grotesque",sans-serif;margin:4px 0 12px;color:var(--mute)}
 .tabs{display:flex;gap:6px;margin-bottom:14px}
-.tabs button{flex:1;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;cursor:pointer}
+.tabs button{flex:1;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-size:.92rem;line-height:1.15;cursor:pointer}
 .tabs button[aria-selected=true]{background:var(--accent,var(--me));color:var(--on);border-color:transparent;font-weight:600}
+.dims{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 14px}
+.dims button{padding:10px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-size:.92rem;line-height:1.15;text-align:center;cursor:pointer}
+@media (min-width:700px){.dims{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.dims button[aria-selected=true]{background:var(--accent,var(--me));color:var(--on);border-color:transparent;font-weight:600}
+.dims button.filled::after{content:"";display:inline-block;width:7px;height:7px;margin-left:6px;border-radius:50%;background:currentColor;vertical-align:1px}
+.fund{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent,var(--me));border-radius:12px;padding:16px 16px 14px}
+.fund h2{font:500 1.35rem/1.3 Newsreader,Georgia,serif;margin:0 0 8px}
+.fund p{margin:0 0 12px}
+.fund .n{margin:4px 0 0;text-align:left}
+.hug{display:inline-flex;align-items:center;gap:8px;height:48px;margin-top:12px;padding:0 14px 0 10px;border:1px solid var(--line);border-radius:12px;background:var(--chip);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.hug-emoji{font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",emoji;font-weight:400;font-style:normal;font-size:28px;line-height:1;font-variant-emoji:emoji}
+.fund .comfort{margin:12px 0 0}
 .say{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--accent,var(--me));border-radius:12px;padding:14px 16px;margin-bottom:14px}
 .say p{margin:0;font:400 1.35rem/1.35 Newsreader,Georgia,serif}
 .say .empty{color:var(--mute);font-style:italic}
@@ -53,8 +65,6 @@ button:focus-visible{outline:3px solid var(--accent,var(--me));outline-offset:2p
 .gate p{margin:0 0 12px}
 .gate button,.q button{padding:8px 12px;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:8px;font:inherit;cursor:pointer}
 .row button.share{background:var(--me);color:var(--on);border-color:transparent;font-weight:600}
-.row button.wa{display:inline-flex;align-items:center;gap:6px;background:#25D366;color:#fff;border-color:transparent;font-weight:600}
-.row button.wa svg{width:18px;height:18px;display:block;flex:none}
 .row button.go,.gate button.go,.q button.go{background:var(--gu);color:var(--on);border-color:transparent;font-weight:600}
 .chip:disabled{opacity:.72;cursor:default}
 .url{display:block;width:100%;margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;color:var(--ink);background:var(--bg)}
@@ -79,259 +89,10 @@ main.has-dock{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 <button role="tab" id="t-me" aria-selected="true">Mi estado</button>
 <button role="tab" id="t-gu" aria-selected="false">Imagino tu estado</button>
 <button role="tab" id="t-cm" aria-selected="false">Comparar</button>
+<button role="tab" id="t-fu" aria-selected="false">Fundamento</button>
 </div>
 <div id="app"></div>
-<p class="n" id="count"></p>
 </main>
-<script>
-var D=[
-{k:'modo',t:'Modo',o:[['resolver','en modo resolver'],['tiempo','en modo tiempo para algo'],['descanso','en modo descanso'],['escuchar','en modo escuchar'],['conectar','en modo conectar'],['crear','en modo crear'],['trabajar','en modo trabajar'],['jugar','en modo jugar'],['cuidar','en modo cuidar'],['planear','en modo planear'],['procesar','en modo procesar'],['silencio','en modo silencio'],['compania','en modo compañía']]},
-{k:'foco',t:'Foco',o:[['problema','con el foco en un problema'],['relacion','con el foco en la relación (quiero conectar)'],['necesidad','con el foco en una necesidad (tengo ganas de algo)'],['pasatiempo','con el foco en un pasatiempo'],['aprender','con el foco en aprender algo'],['trabajo','con el foco en el trabajo'],['casa','con el foco en la casa'],['salud','con el foco en la salud'],['dinero','con el foco en el dinero'],['futuro','con el foco en el futuro'],['conversacion','con el foco en una conversación'],['cuerpo','con el foco en el cuerpo'],['proyecto','con el foco en un proyecto'],['naturaleza','con el foco en la naturaleza'],['memoria','con el foco en un recuerdo'],['entender','con el foco en entender qué pasa']]},
-{k:'emo',t:'Emoción',multi:1,o:[['frus','frustración e impotencia'],['enojo','enojo o bronca'],['ans','ansiedad'],['amor','amor'],['ale','alegría o diversión'],['apa','apatía'],['des','desilusión'],['miedo','miedo'],['tristeza','tristeza'],['calma','calma'],['verguenza','vergüenza'],['culpa','culpa'],['esperanza','esperanza'],['gratitud','gratitud'],['soledad','soledad'],['ternura','ternura'],['confusion','confusión'],['incomp','incomprendido'],['voluntad','buena voluntad'],['incertidumbre','incertidumbre']]},
-{k:'tiempo',t:'Percepción del tiempo',o:[['t','con tiempo disponible'],['a','con algo de tiempo'],['p','con poco tiempo'],['n','sin tiempo'],['apuro','con apuro'],['lento','con el tiempo yendo lento'],['rapido','con el tiempo yendo rápido'],['espera','esperando'],['pausa','con una pausa']]},
-{k:'nec',t:'Necesidad del cuerpo',multi:1,o:[['ham','con hambre'],['ban','con ganas de ir al baño'],['sex','con deseo de intimidad'],['des','con sueño'],['sed','con sed'],['frio','con frío'],['calor','con calor'],['dolor','con dolor o molestia'],['cansancio','con cansancio'],['aire','con ganas de aire libre'],['movimiento','con ganas de moverme'],['contacto','con ganas de contacto'],['higiene','con ganas de asearme'],['energia','con poca energía'],['abrazo','con ganas de un abrazo'],['ejercicio','con ganas de hacer ejercicios'],['mindfulness','con ganas de hacer mindfulness'],['regulacion','con ganas de regulación emocional']]},
-{k:'animo',t:'Estado de ánimo',o:[['b','de buen humor'],['m','de mal humor'],['neutro','de ánimo neutro'],['irritable','de ánimo irritable'],['sensible','de ánimo sensible'],['animado','de ánimo animado'],['apagado','de ánimo apagado']]}
-];
-/* Enlace: #e=<versión>.<modo>-<foco>-<emociones>-<tiempo>-<necesidad>-<ánimo>
-   Elección única: 0 = sin elegir, 1..n = opción en el orden de esa versión.
-   Emociones y necesidad: máscara de bits, en el mismo orden.
-   Si cambia el orden o el sentido de una opción, subí SCHEMA y conservá la lista anterior. */
-var SCHEMA=2;
-var VERSIONS={1:[
-{k:'modo',keys:['resolver','tiempo','descanso','escuchar','conectar','crear','trabajar','jugar','cuidar','planear','procesar','silencio','compania']},
-{k:'foco',keys:['problema','relacion','necesidad','pasatiempo','aprender','trabajo','casa','salud','dinero','futuro','conversacion','cuerpo','proyecto','naturaleza','memoria','entender']},
-{k:'emo',multi:1,keys:['frus','enojo','ans','amor','ale','apa','des','miedo','tristeza','calma','verguenza','culpa','esperanza','gratitud','soledad','ternura','confusion','incomp','voluntad']},
-{k:'tiempo',keys:['t','a','p','n','apuro','lento','rapido','espera','pausa']},
-{k:'nec',keys:['ham','ban','sex','des','sed','frio','calor','dolor','cansancio','aire','movimiento','contacto','higiene','energia']},
-{k:'animo',keys:['b','m','neutro','irritable','sensible','animado','apagado']}
-],2:[
-{k:'modo',keys:['resolver','tiempo','descanso','escuchar','conectar','crear','trabajar','jugar','cuidar','planear','procesar','silencio','compania']},
-{k:'foco',keys:['problema','relacion','necesidad','pasatiempo','aprender','trabajo','casa','salud','dinero','futuro','conversacion','cuerpo','proyecto','naturaleza','memoria','entender']},
-{k:'emo',multi:1,keys:['frus','enojo','ans','amor','ale','apa','des','miedo','tristeza','calma','verguenza','culpa','esperanza','gratitud','soledad','ternura','confusion','incomp','voluntad','incertidumbre']},
-{k:'tiempo',keys:['t','a','p','n','apuro','lento','rapido','espera','pausa']},
-{k:'nec',multi:1,keys:['ham','ban','sex','des','sed','frio','calor','dolor','cansancio','aire','movimiento','contacto','higiene','energia','abrazo','ejercicio','mindfulness','regulacion']},
-{k:'animo',keys:['b','m','neutro','irritable','sensible','animado','apagado']}
-]};
-var SSKEY='animoreader-share';
-var LSKEY='animoreader-state';
-var S={me:{},gu:{}},tab='me',incoming=null,showGate=false,shownLink='';
-var $=function(i){return document.getElementById(i)};
-function lab(d,v){for(var i=0;i<d.o.length;i++)if(d.o[i][0]===v)return d.o[i][1]}
-function selectedKeys(d,st){var v=st[d.k];if(v==null||v==='')return [];if(!d.multi)return [v];
- var list=Array.isArray(v)?v:[v];if(!list.length)return [];
- return d.o.map(function(o){return o[0]}).filter(function(k){return list.indexOf(k)>-1})}
-function joinLabs(labels){return labels.length>1?labels.slice(0,-1).join(', ')+' y '+labels[labels.length-1]:labels[0]}
-function parts(st){var r=[];D.forEach(function(d){var keys=selectedKeys(d,st);if(!keys.length)return;
- var labels=keys.map(function(x){return lab(d,x)});
- if(d.k==='emo')r.push('sintiendo '+joinLabs(labels));
- else r.push(joinLabs(labels))});return r}
-function sentence(st,who){var p=parts(st);if(!p.length)return '';
- var j=p.length>1?p.slice(0,-1).join(', ')+' y '+p[p.length-1]:p[0];
- var lead=who==='me'?'Estoy ':who==='them'?'Está ':'Creo que estás ';
- return lead+j+'.'}
-function hasNec(st,key){var v=st.nec;if(!v)return false;if(Array.isArray(v))return v.indexOf(key)>-1;return v===key}
-function questions(st){var q=[];
- if(st.modo==='resolver'||st.foco==='problema')q.push('¿Quieres que te ayude a resolverlo o prefieres que solo te escuche?');
- if(st.modo==='descanso')q.push('¿Necesitas espacio o compañía tranquila?');
- if(st.foco==='relacion')q.push('¿Te parece si dedicamos un rato a estar juntos?');
- if(st.tiempo==='p'||st.tiempo==='n')q.push('¿Lo retomamos más tarde, a una hora que acordemos?');
- if(st.nec&&(hasNec(st,'ham')||hasNec(st,'des')||hasNec(st,'ban')))q.push('¿Atendemos primero esta necesidad y después conversamos?');
- if(st.emo&&st.emo.length>1)q.push('Estoy sintiendo varias cosas a la vez. ¿Me das un momento para ordenarlas?');
- return q.slice(0,2)}
-function hasAny(st){return D.some(function(d){var v=st[d.k];return d.multi?!!(v&&v.length):!!v})}
-function cloneState(st){var o={};D.forEach(function(d){var v=st&&st[d.k];if(v==null||v==='')return;
- if(d.multi){var list=Array.isArray(v)?v:[v];list=list.filter(function(k){return d.o.some(function(x){return x[0]===k})});if(list.length)o[d.k]=list}
- else if(d.o.some(function(x){return x[0]===v}))o[d.k]=v});return o}
-function lockedGuess(){return tab==='gu'&&incoming&&incoming.revealed}
-function pick(d,v){if(lockedGuess())return;var st=S[tab];
- if(d.multi){var raw=st[d.k],a=Array.isArray(raw)?raw:(raw?[raw]:[]),i=a.indexOf(v);if(i>-1)a.splice(i,1);else a.push(v);st[d.k]=a}
- else st[d.k]=st[d.k]===v?null:v;
- if(tab==='me')shownLink='';
- if(tab==='gu'&&incoming&&incoming.state&&!incoming.revealed){incoming.guess=cloneState(S.gu);incoming.started=true;saveIncoming()}
- saveLocal();
- render()}
-function total(){var n=1;D.forEach(function(d){n*=d.multi?Math.pow(2,d.o.length):d.o.length+1});return n}
-function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e}
-function specOk(){var spec=VERSIONS[SCHEMA];if(!spec||spec.length!==D.length)return false;
- for(var i=0;i<D.length;i++){if(D[i].k!==spec[i].k||!!D[i].multi!==!!spec[i].multi||D[i].o.length!==spec[i].keys.length)return false;
-  for(var j=0;j<D[i].o.length;j++)if(D[i].o[j][0]!==spec[i].keys[j])return false}return true}
-function encodeState(st){var spec=VERSIONS[SCHEMA];
- return SCHEMA+'.'+spec.map(function(d){var v=st[d.k];
-  if(d.multi){var list=Array.isArray(v)?v:(v?[v]:[]);var bits=0;list.forEach(function(key){var i=d.keys.indexOf(key);if(i>-1)bits+=Math.pow(2,i)});return bits}
-  if(!v)return 0;var i=d.keys.indexOf(v);return i<0?0:i+1}).join('-')}
-function fail(msg){return {ok:false,error:msg}}
-function decode(payload){
- if(!payload||payload.length>80)return fail('Este enlace no se pudo leer.');
- var dot=payload.indexOf('.');if(dot<1)return fail('Este enlace no se pudo leer.');
- var verText=payload.slice(0,dot),rest=payload.slice(dot+1);
- if(!/^\d+$/.test(verText))return fail('Este enlace no se pudo leer.');
- var ver=+verText,spec=VERSIONS[ver];
- if(!spec)return ver>SCHEMA?fail('Este enlace es de una versión más nueva de la app. Cuando la actualices, pídele que lo comparta de nuevo.'):fail('Este enlace no se pudo leer.');
- var parts=rest.split('-');if(parts.length!==spec.length)return fail('Este enlace no se pudo leer.');
- var st={};
- for(var i=0;i<spec.length;i++){if(!/^\d+$/.test(parts[i]))return fail('Este enlace no se pudo leer.');
-  var n=+parts[i],d=spec[i],cur=null;D.forEach(function(x){if(x.k===d.k)cur=x});if(!cur)continue;
-  if(d.multi){if(n>=Math.pow(2,d.keys.length))return fail('Este enlace no se pudo leer.');
-   var arr=[];d.keys.forEach(function(key,bit){if((n&Math.pow(2,bit))&&cur.o.some(function(o){return o[0]===key}))arr.push(key)});if(arr.length)st[d.k]=arr}
-  else{if(n===0)continue;if(n>d.keys.length)return fail('Este enlace no se pudo leer.');
-   var key=d.keys[n-1];if(cur.o.some(function(o){return o[0]===key}))st[d.k]=key}}
- return {ok:true,state:st}}
-function shareUrl(st){return location.href.split('#')[0]+'#e='+encodeState(st)}
-function loadLocal(){try{var s=JSON.parse(localStorage.getItem(LSKEY)||'null');if(!s)return;if(s.me)S.me=cloneState(s.me);if(s.gu)S.gu=cloneState(s.gu)}catch(e){}}
-function saveLocal(){try{localStorage.setItem(LSKEY,JSON.stringify({me:cloneState(S.me),gu:cloneState(S.gu)}))}catch(e){}}
-function loadSaved(raw){try{var s=JSON.parse(sessionStorage.getItem(SSKEY)||'null');if(!s||s.raw!==raw)return null;return s}catch(e){return null}}
-function saveIncoming(){if(!incoming||!incoming.raw||incoming.error)return;
- try{sessionStorage.setItem(SSKEY,JSON.stringify({raw:incoming.raw,revealed:!!incoming.revealed,guess:incoming.guess,started:!!incoming.started}))}catch(e){}}
-function readLink(){
- var h='';try{h=decodeURIComponent((location.hash||'').replace(/^#/,'')).trim()}catch(e){h=''}
- if(!h){incoming=null;showGate=false;return}
- var m=/^e=([0-9.\-]+)$/.exec(h);if(!m){if(h.indexOf('e=')===0){incoming={error:'Este enlace no se pudo leer.'};showGate=false}return}
- var raw=m[1];if(incoming&&incoming.raw===raw&&(incoming.state||incoming.error))return;
- var dec=decode(raw);
- if(!dec.ok){incoming={raw:raw,error:dec.error};showGate=false;return}
- if(!hasAny(dec.state)){incoming={raw:raw,error:'Este enlace no trae ningún estado.'};showGate=false;return}
- var saved=loadSaved(raw);
- if(saved&&saved.revealed)S.gu=cloneState(saved.guess||{});
- else if(saved&&hasAny(saved.guess||{}))S.gu=cloneState(saved.guess);
- var kept=hasAny(S.gu);
- incoming={raw:raw,state:dec.state,revealed:!!(saved&&saved.revealed),guess:(saved&&saved.revealed)?cloneState(saved.guess||{}):(kept?cloneState(S.gu):null),started:!!(saved&&(saved.started||saved.revealed))||kept};
- if(kept&&!incoming.revealed)saveIncoming();
- showGate=!incoming.revealed&&!incoming.started;
- if(incoming.revealed)tab='cm';else if(incoming.started)tab='gu'}
-function dismissShare(){incoming=null;showGate=false;shownLink='';
- try{sessionStorage.removeItem(SSKEY)}catch(e){}
- if(location.hash)history.replaceState(null,'',location.pathname+location.search);
- tab='me';render()}
-function beginImagine(){if(incoming){incoming.started=true;saveIncoming()}showGate=false;tab='gu';render()}
-function reveal(){if(!incoming||!incoming.state||incoming.revealed)return;
- incoming.revealed=true;incoming.started=true;incoming.guess=cloneState(S.gu);saveIncoming();saveLocal();showGate=false;tab='cm';render()}
-function go(k){if(showGate&&incoming&&incoming.state){incoming.started=true;saveIncoming()}showGate=false;tab=k;render()}
-function shareText(url){return 'Te comparto cómo estoy. Antes de abrir el enlace, imagina mi estado.\n'+url}
-function whatsAppHref(url){return 'https://wa.me/?text='+encodeURIComponent(shareText(url))}
-function waIcon(){var ns='http://www.w3.org/2000/svg',s=document.createElementNS(ns,'svg'),p=document.createElementNS(ns,'path');
- s.setAttribute('viewBox','0 0 24 24');s.setAttribute('aria-hidden','true');p.setAttribute('fill','currentColor');
- p.setAttribute('d','M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z');
- s.appendChild(p);return s}
-function shareWhatsApp(btn){
- var label=btn.querySelector('span');
- var flash=function(t){if(label)label.textContent=t;setTimeout(function(){if(label)label.textContent='WhatsApp'},1500)};
- if(!hasAny(S.me)){flash('Elige algo antes');return}
- if(!specOk()){flash('No se pudo armar');return}
- var href=whatsAppHref(shareUrl(S.me));
- var w=window.open(href,'_blank','noopener,noreferrer');
- if(!w)location.href=href}
-function shareMine(btn){
- if(!hasAny(S.me)){btn.textContent='Elige algo antes';setTimeout(function(){btn.textContent='Compartir'},1500);return}
- if(!specOk()){btn.textContent='No se pudo armar';setTimeout(function(){btn.textContent='Compartir'},1500);return}
- var url=shareUrl(S.me),text='Te comparto cómo estoy. Antes de abrir el enlace, imagina mi estado.';
- if(navigator.share){navigator.share({title:'AnimoReader',text:text,url:url}).catch(function(err){if(err&&err.name==='AbortError')return;fallbackCopy(url,btn)});return}
- fallbackCopy(url,btn)}
-function fallbackCopy(url,btn){
- var ok=function(){shownLink='';btn.textContent='Enlace copiado';setTimeout(function(){btn.textContent='Compartir'},1600)};
- var bad=function(){shownLink=url;render()};
- if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(ok).catch(bad);else bad()}
-function render(){
- var app=$('app');app.textContent='';
- var pending=incoming&&incoming.state&&!incoming.revealed;
- document.querySelector('main').classList.toggle('has-dock',!!(pending&&!showGate&&tab==='gu'));
- ['me','gu','cm'].forEach(function(k){$('t-'+k).setAttribute('aria-selected',String(!showGate&&k===tab))});
- document.documentElement.style.setProperty('--accent',(showGate||tab==='gu')?'var(--gu)':'var(--me)');
- $('count').textContent=showGate?'':'Con estas seis dimensiones hay '+total().toLocaleString('es')+' combinaciones posibles. El estado del otro rara vez es uno solo.';
- if(incoming&&incoming.error){var err=el('div','q');err.appendChild(el('p','',incoming.error));
-  var okb=el('button','','Entendido');okb.onclick=dismissShare;var er=el('div','row');er.appendChild(okb);err.appendChild(er);app.appendChild(err)}
- if(showGate&&incoming&&incoming.state&&!incoming.revealed){renderGate(app);return}
- if(tab==='cm'){compare(app);return}
- var st=S[tab],s=sentence(st,tab),lock=lockedGuess();
- var box=el('div','say');
- box.appendChild(s?el('p','',s):el('p','empty',tab==='me'?'Elige abajo cómo estás ahora.':'Elige abajo cómo imaginas que está la otra persona.'));
- if(tab==='me')box.appendChild(el('p','hint','WhatsApp abre el chat con el enlace listo. La otra persona imagina tu estado antes de verlo.'));
- if(lock)box.appendChild(el('p','hint','Ya revelaste este estado. Así quedó lo que imaginaste.'));
- var row=el('div','row');
- if(tab==='me'){var wa=document.createElement('button');wa.className='wa';wa.type='button';wa.appendChild(waIcon());var wal=document.createElement('span');wal.textContent='WhatsApp';wa.appendChild(wal);wa.onclick=function(){shareWhatsApp(wa)};row.appendChild(wa);var sh=el('button','share','Compartir');sh.onclick=function(){shareMine(sh)};row.appendChild(sh)}
- var cp=el('button','','Copiar');cp.onclick=function(){if(!s)return;var done=function(){cp.textContent='Copiado'};try{navigator.clipboard.writeText(s).then(done).catch(function(){cp.textContent='No se pudo copiar'})}catch(e){cp.textContent='No se pudo copiar'}setTimeout(function(){cp.textContent='Copiar'},1500)};
- row.appendChild(cp);
- if(!lock){var cl=el('button','','Limpiar');cl.onclick=function(){S[tab]={};if(tab==='me')shownLink='';if(tab==='gu'&&incoming&&incoming.state&&!incoming.revealed){incoming.guess=cloneState(S.gu);incoming.started=true;saveIncoming()}saveLocal();render()};row.appendChild(cl)}
- box.appendChild(row);
- if(tab==='me'&&shownLink){box.appendChild(el('p','hint','Selecciona el enlace y cópialo.'));var inp=document.createElement('input');inp.className='url';inp.readOnly=true;inp.value=shownLink;inp.setAttribute('aria-label','Enlace para compartir');box.appendChild(inp);setTimeout(function(){inp.focus();inp.select()},0)}
- app.appendChild(box);
- if(pending&&tab==='me'){var note=el('div','q');note.appendChild(el('p','','Hay un estado compartido sin revelar. Imagínalo antes de verlo.'));
-  var nb=el('button','go','Imaginar ahora');nb.onclick=beginImagine;var nr=el('div','row');nr.appendChild(nb);note.appendChild(nr);app.appendChild(note)}
- var qs=questions(st);
- if(qs.length&&!lock){var q=el('div','q');q.appendChild(el('strong','',tab==='me'?'Para decirlo en voz alta':'Para preguntar antes de suponer'));qs.forEach(function(x){q.appendChild(el('p','',x))});app.appendChild(q)}
- D.forEach(function(d){var f=el('fieldset'),lg=el('legend','',d.t+' ');
-  if(d.multi)lg.appendChild(el('small','','(puedes elegir varias)'));
-  else if(tab==='gu')lg.appendChild(el('small','','(si no sabes, déjalo sin elegir)'));
-  f.appendChild(lg);var c=el('div','chips');
-  d.o.forEach(function(o){var b=el('button','chip',o[1].replace(/^(con el foco en |en modo |con |de |sin )/,''));
-   var on=d.multi?(st[d.k]||[]).indexOf(o[0])>-1:st[d.k]===o[0];
-   b.setAttribute('aria-pressed',String(on));b.disabled=lock;b.onclick=function(){pick(d,o[0])};c.appendChild(b)});
-  f.appendChild(c);app.appendChild(f)});
- if(pending&&tab==='gu'){var dock=el('div','dock'),inner=el('div','dock-inner');
-  inner.appendChild(el('p','',hasAny(S.gu)?'Tu elección se conservó. Toca Revelar para compararla.':'Cuando termines, toca Revelar.'));
-  var rv=el('button','','Revelar');rv.onclick=reveal;inner.appendChild(rv); dock.appendChild(inner);app.appendChild(dock)}}
-function renderGate(app){
- var g=el('div','gate');g.appendChild(el('h2','','Alguien te compartió su estado'));
- g.appendChild(el('p','','Primero imagina cómo está esta persona. Cuando termines, toca Revelar.'));
- var row=el('div','row');var goBtn=el('button','go','Imaginar ahora');goBtn.onclick=beginImagine;
- var skip=el('button','','Seguir sin este enlace');skip.onclick=dismissShare;
- row.appendChild(goBtn);row.appendChild(skip);g.appendChild(row);app.appendChild(g)}
-function val(st,d){var keys=selectedKeys(d,st);if(!keys.length)return null;return d.multi?keys.map(function(x){return lab(d,x)}).join(', '):lab(d,keys[0])}
-function sameChoice(d,a,b){var x=selectedKeys(d,a).join('\n'),y=selectedKeys(d,b).join('\n');return !!(x&&y&&x===y)}
-function fillTable(real,guess,heads){
- var w=el('div','wrap'),t=el('table','cmp'),h=el('tr');heads.forEach(function(x){h.appendChild(el('th','',x))});t.appendChild(h);
- var hit=0,tot=0;
- D.forEach(function(d){var x=val(real,d),y=val(guess,d);if(!x&&!y)return;var r=el('tr');
-  r.appendChild(el('td','',d.t));r.appendChild(el('td','',x||'sin elegir'));r.appendChild(el('td','',y||'no sabía'));
-  var both=!!(x&&y),m=sameChoice(d,real,guess);if(both){tot++;if(m)hit++}
-  r.appendChild(el('td',both?(m?'ok':'no'):'',both?(m?'coincide':'distinto'):''));t.appendChild(r)});
- w.appendChild(t);return {node:w,hit:hit,tot:tot}}
-function resultLine(hit,tot){return tot?('Coincidieron '+hit+' de '+tot+'. Las diferencias no son errores: son buenas preguntas para hacerse.'):'No hay dimensiones elegidas de los dos lados para comparar.'}
-function compare(app){
- if(incoming&&incoming.state&&incoming.revealed){compareShared(app);return}
- if(incoming&&incoming.state&&!incoming.revealed){
-  var wait=el('div','say');wait.appendChild(el('p','','El estado compartido sigue oculto. Imagínalo primero y después toca Revelar.'));
-  var wr=el('div','row');var wb=el('button','go','Imaginar ahora');wb.onclick=beginImagine;wr.appendChild(wb);wait.appendChild(wr);app.appendChild(wait);return}
- var a=sentence(S.me,'me'),g=sentence(S.gu,'gu');
- var box=el('div','say');box.appendChild(el('p','empty','Cada persona arma su estado real en «Mi estado». Quien imagina el del otro lo arma en «Imagino tu estado». Aquí se ven las diferencias.'));app.appendChild(box);
- if(!a||!g){app.appendChild(el('p','n','Falta completar al menos una dimensión en «Mi estado» y en «Imagino tu estado».'));return}
- var table=fillTable(S.me,S.gu,['Dimensión','Estado real','Lo que imaginé','']);app.appendChild(table.node);
- app.appendChild(el('p','n',resultLine(table.hit,table.tot)))}
-function compareShared(app){
- var real=incoming.state,guess=incoming.guess||{};
- var box=el('div','say');
- box.appendChild(el('p','hint','Este es el estado que te compartieron, comparado con lo que imaginaste antes de verlo.'));
- var theirs=sentence(real,'them'),mine=sentence(guess,'gu');
- if(theirs)box.appendChild(el('p','',theirs));
- if(mine)box.appendChild(el('p','',mine));
- app.appendChild(box);
- if(!mine)app.appendChild(el('p','n','No imaginaste ninguna dimensión antes de revelar.'));
- var table=fillTable(real,guess,['Dimensión','Su estado','Lo que imaginé','']);app.appendChild(table.node);
- app.appendChild(el('p','n',resultLine(table.hit,table.tot)));
- var qs=questions(real);
- if(qs.length){var q=el('div','q');q.appendChild(el('strong','','Para conversar a partir de su estado'));qs.forEach(function(x){q.appendChild(el('p','',x))});app.appendChild(q)}
- var row=el('div','row');var bye=el('button','','Dejar este enlace');bye.onclick=dismissShare;row.appendChild(bye);app.appendChild(row)}
-$('t-me').onclick=function(){go('me')};
-$('t-gu').onclick=function(){go('gu')};
-$('t-cm').onclick=function(){go('cm')};
-loadLocal();
-readLink();
-render();
-window.addEventListener('hashchange',function(){readLink();render()});
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
-var deferredInstall=null;
-function installedApp(){return window.matchMedia('(display-mode: standalone)').matches||window.matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true}
-function mobileDevice(){var ua=navigator.userAgent||'';if(/Android|iPhone|iPad|iPod/i.test(ua))return true;return navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1}
-function installHidden(){try{return sessionStorage.getItem('animoreader-install-hide')==='1'}catch(e){return false}}
-function hideInstall(remember){if(remember){try{sessionStorage.setItem('animoreader-install-hide','1')}catch(e){}}var box=$('install');if(!box)return;box.hidden=true;box.textContent=''}
-function showInstall(mode){var box=$('install');if(!box)return;if(installedApp()||!mobileDevice()||installHidden()){hideInstall(false);return}box.hidden=false;box.textContent='';
- box.appendChild(el('p','',mode==='ios'?'Para crear el ícono, toca Compartir y después Agregar a inicio.':'Instala AnimoReader para tener el ícono en el celular.'));
- var row=el('div','row');
- if(mode==='native'){var b=el('button','install-go','Instalar');b.onclick=function(){if(!deferredInstall)return;var prompt=deferredInstall.prompt();var choice=deferredInstall.userChoice;deferredInstall=null;Promise.resolve(choice||prompt).then(function(result){hideInstall(result&&result.outcome==='accepted')}).catch(function(){hideInstall(false)})};row.appendChild(b)}
- var x=el('button','install-x','Ahora no');x.setAttribute('aria-label','Cerrar aviso de instalación');x.onclick=function(){hideInstall(true)};row.appendChild(x);box.appendChild(row)}
-window.addEventListener('beforeinstallprompt',function(e){if(!mobileDevice()||installedApp())return;e.preventDefault();deferredInstall=e;showInstall('native')});
-window.addEventListener('appinstalled',function(){deferredInstall=null;hideInstall(true)});
-try{window.matchMedia('(display-mode: standalone)').addEventListener('change',function(ev){if(ev.matches)hideInstall(true)})}catch(e){}
-(function(){var ua=navigator.userAgent||'';var iOS=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);var other=/CriOS|FxiOS|EdgiOS|OPiOS|WhatsApp|Instagram|FBAN|FBAV/.test(ua);if(iOS&&!other)showInstall('ios')})();
-</script>
+<script type="module" src="js/app.js"></script>
 </body>
 </html>
